@@ -1,0 +1,708 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+<meta charset="UTF-8"> 
+<meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+<title>Studio | Refined</title> 
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"> 
+<style> 
+:root { 
+--bg: #0a0a0a; 
+--text-main: #f0f0f0; 
+--text-dim: #888888; 
+--accent: #ffffff; 
+--glass: rgba(255, 255, 255, 0.03); 
+--glass-border: rgba(255, 255, 255, 0.08); 
+--sidebar-closed: 72px; 
+--sidebar-open: 240px; 
+--anim-speed: 0.4s; 
+--curve: cubic-bezier(0.16, 1, 0.3, 1); 
+} 
+
+* { 
+margin: 0; 
+padding: 0; 
+box-sizing: border-box; 
+-webkit-font-smoothing: antialiased; 
+} 
+
+body { 
+background-color: var(--bg); 
+color: var(--text-main); 
+font-family: 'Inter', sans-serif; 
+height: 100vh; 
+display: flex; 
+overflow: hidden; 
+} 
+
+/* Sidebar Styles */ 
+.sidebar { 
+width: var(--sidebar-closed); 
+height: 100vh; 
+border-right: 1px solid var(--glass-border); 
+display: flex; 
+flex-direction: column; 
+padding: 24px 16px; 
+transition: width var(--anim-speed) var(--curve), background var(--anim-speed) var(--curve); 
+background: var(--bg); 
+z-index: 1001; 
+flex-shrink: 0; 
+overflow: hidden; 
+} 
+
+.sidebar:hover { 
+width: var(--sidebar-open); 
+background: #0d0d0d; 
+} 
+
+.sidebar-header { 
+display: flex; 
+align-items: center; 
+gap: 18px; 
+margin-bottom: 40px; 
+padding-left: 10px; 
+} 
+
+.logo-mark { 
+width: 22px; 
+height: 22px; 
+background: var(--accent); 
+border-radius: 5px; 
+flex-shrink: 0; 
+display: flex; 
+align-items: center; 
+justify-content: center; 
+} 
+
+.logo-text { 
+font-weight: 600; 
+font-size: 0.95rem; 
+letter-spacing: 1px; 
+white-space: nowrap; 
+opacity: 0; 
+transform: translateX(-10px); 
+transition: opacity var(--anim-speed) var(--curve), transform var(--anim-speed) var(--curve); 
+} 
+
+.sidebar:hover .logo-text { opacity: 1; transform: translateX(0); } 
+
+.nav-items { display: flex; flex-direction: column; gap: 8px; height: 100%; } 
+
+.nav-item { 
+display: flex; 
+align-items: center; 
+gap: 18px; 
+padding: 12px; 
+border-radius: 10px; 
+color: var(--text-dim); 
+transition: background var(--anim-speed) var(--curve), color var(--anim-speed) var(--curve); 
+cursor: pointer; 
+white-space: nowrap; 
+} 
+
+.nav-item svg { 
+flex-shrink: 0; 
+opacity: 0.7; 
+transition: opacity 0.3s; 
+} 
+
+.nav-item:hover { background: var(--glass); color: var(--text-main); } 
+.nav-item:hover svg { opacity: 1; } 
+
+.nav-label { 
+font-size: 0.85rem; 
+font-weight: 400; 
+opacity: 0; 
+transform: translateX(-10px); 
+transition: opacity var(--anim-speed) var(--curve), transform var(--anim-speed) var(--curve); 
+} 
+
+.sidebar:hover .nav-label { opacity: 1; transform: translateX(0); } 
+
+/* Overlays (History & Settings) */ 
+.overlay-panel { 
+position: fixed; 
+top: 0; 
+left: 0; 
+width: 100%; 
+height: 100%; 
+background: var(--bg); 
+z-index: 1000; 
+display: flex; 
+flex-direction: column; 
+padding: 80px 100px; 
+transform: translateY(100%); 
+transition: transform 0.6s var(--curve); 
+overflow-y: auto; 
+} 
+
+.overlay-panel.active { transform: translateY(0); } 
+
+.overlay-header { max-width: 1100px; width: 100%; margin: 0 auto 40px; display: flex; justify-content: space-between; align-items: flex-end; } 
+.overlay-title { font-size: 2rem; font-weight: 300; } 
+.close-overlay { background: var(--accent); color: black; border: none; padding: 10px 20px; border-radius: 30px; font-weight: 600; cursor: pointer; transition: transform 0.2s; } 
+.close-overlay:hover { transform: scale(1.05); } 
+
+/* History Grid & Card Styling */ 
+.history-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; max-width: 1100px; width: 100%; margin: 0 auto; } 
+
+.history-card { 
+background: var(--glass); 
+border: 1px solid var(--glass-border); 
+border-radius: 20px; 
+padding: 24px; 
+cursor: pointer; 
+transition: all 0.3s var(--curve); 
+animation: reveal 0.4s ease-out forwards; 
+position: relative;
+} 
+
+.history-card:hover { background: rgba(255, 255, 255, 0.06); transform: translateY(-5px); } 
+
+.delete-btn {
+position: absolute;
+top: 16px;
+right: 16px;
+width: 28px;
+height: 28px;
+border-radius: 6px;
+border: none;
+background: rgba(255, 69, 58, 0.1);
+color: #ff453a;
+display: flex;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+opacity: 0;
+transform: scale(0.9);
+transition: all 0.2s ease;
+z-index: 5;
+}
+
+.history-card:hover .delete-btn {
+opacity: 1;
+transform: scale(1);
+}
+
+.delete-btn:hover {
+background: #ff453a;
+color: white;
+}
+
+.card-tag { font-size: 0.6rem; text-transform: uppercase; color: var(--text-dim); margin-bottom: 12px; display: block; } 
+.card-name { font-size: 1.1rem; color: var(--text-main); margin-bottom: 8px; } 
+.card-preview { font-size: 0.85rem; color: var(--text-dim); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; } 
+
+/* Settings Specific Styles */ 
+.settings-content { max-width: 600px; width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; } 
+.settings-section { animation: reveal 0.5s var(--curve) forwards; } 
+.api-input-group { display: flex; gap: 12px; margin-top: 10px; } 
+.api-input-group input { 
+flex: 1; 
+background: var(--glass); 
+border: 1px solid var(--glass-border); 
+border-radius: 12px; 
+padding: 14px 16px; 
+color: white; 
+font-family: 'Inter', sans-serif; 
+font-size: 0.95rem; 
+outline: none; 
+transition: border-color 0.3s; 
+} 
+
+.api-input-group input:focus { border-color: var(--text-dim); } 
+
+.add-key-btn { 
+background: var(--text-main); 
+color: black; 
+border: none; 
+padding: 0 24px; 
+border-radius: 12px; 
+font-weight: 600; 
+cursor: pointer; 
+transition: opacity 0.2s; 
+} 
+.add-key-btn:hover { opacity: 0.9; } 
+
+.keys-list { display: flex; flex-direction: column; gap: 12px; margin-top: 15px; } 
+
+.key-card { 
+background: var(--glass); 
+border: 1px solid var(--glass-border); 
+padding: 20px; 
+border-radius: 16px; 
+display: flex; 
+justify-content: space-between; 
+align-items: center; 
+transition: all 0.3s; 
+} 
+
+.key-card.active-key { 
+border-color: rgba(255, 255, 255, 0.3); 
+background: rgba(255, 255, 255, 0.05); 
+} 
+
+.key-info { display: flex; flex-direction: column; gap: 4px; } 
+.key-status { 
+font-size: 0.6rem; 
+text-transform: uppercase; 
+border: 1px solid var(--glass-border); 
+width: fit-content; 
+padding: 2px 6px; 
+border-radius: 4px; 
+margin-bottom: 4px; 
+color: var(--text-dim); 
+} 
+.active-key .key-status { border-color: var(--text-main); color: var(--text-main); } 
+
+.key-name { font-size: 0.95rem; font-weight: 500; } 
+.key-id { font-size: 0.75rem; color: var(--text-dim); font-family: monospace; letter-spacing: 0.5px; } 
+
+.switch-key-btn { 
+background: transparent; 
+border: 1px solid var(--glass-border); 
+color: var(--text-main); 
+padding: 8px 16px; 
+font-size: 0.8rem; 
+border-radius: 8px; 
+cursor: pointer; 
+transition: 0.3s; 
+} 
+
+.switch-key-btn:hover { background: var(--accent); color: black; border-color: var(--accent); } 
+
+/* Main Chat Area */ 
+.app-container { flex: 1; display: flex; flex-direction: column; height: 100vh; position: relative; align-items: center; background: radial-gradient(circle at top center, #111 0%, #0a0a0a 100%); } 
+.chat-space { width: 100%; max-width: 760px; flex: 1; overflow-y: auto; padding: 60px 24px 160px; scroll-behavior: smooth; } 
+.chat-space::-webkit-scrollbar { display: none; } 
+.msg { margin-bottom: 32px; animation: reveal 0.5s var(--curve) forwards; } 
+.msg-label { font-size: 0.65rem; text-transform: uppercase; color: var(--text-dim); margin-bottom: 6px; display: block; } 
+.msg-content { font-size: 1rem; line-height: 1.6; font-weight: 300; } 
+.user-msg .msg-content { color: #a0b0ff; } 
+
+.input-wrapper { 
+position: absolute; 
+bottom: 40px; 
+width: calc(100% - 48px); 
+max-width: 700px; 
+background: rgba(255, 255, 255, 0.02); 
+backdrop-filter: blur(30px); 
+border: 1px solid var(--glass-border); 
+border-radius: 20px; 
+padding: 12px 12px 12px 20px; 
+display: flex; 
+align-items: center; 
+gap: 15px; 
+} 
+
+textarea { flex: 1; background: none; border: none; outline: none; color: var(--text-main); font-family: inherit; font-size: 1rem; padding: 8px 0; resize: none; max-height: 180px; } 
+.send-trigger { background: var(--accent); border: none; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s ease; } 
+.send-trigger:hover { transform: scale(1.05); } 
+.send-trigger:disabled { opacity: 0.5; cursor: not-allowed; } 
+
+@keyframes reveal { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } } 
+
+/* Code Block Styling - VS Code theme */ 
+.code-block-wrapper { margin: 12px 0; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3); } 
+.code-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: #2d2d30; } 
+.code-language { font-size: 0.75rem; color: #cccccc; text-transform: uppercase; font-weight: 500; } 
+.copy-btn { background: transparent; border: 1px solid #3e3e42; color: #cccccc; padding: 4px 10px; border-radius: 3px; font-size: 0.7rem; cursor: pointer; transition: all 0.2s ease; font-family: 'Inter', sans-serif; } 
+.copy-btn:hover { background: #3e3e42; color: #ffffff; border-color: #505050; } 
+pre { 
+background: #1e1e1e; 
+padding: 16px; 
+overflow-x: auto; 
+color: #d4d4d4; 
+font-family: 'Consolas', 'Courier New', monospace; 
+font-size: 0.9rem; 
+margin: 0; 
+line-height: 1.5; 
+} 
+pre::-webkit-scrollbar { height: 8px; } 
+pre::-webkit-scrollbar-track { background: #1e1e1e; } 
+pre::-webkit-scrollbar-thumb { background: #424242; border-radius: 4px; } 
+
+.msg-content code { background: rgba(110, 118, 129, 0.4); border-radius: 3px; padding: 2px 6px; font-family: 'Consolas', monospace; font-size: 0.9rem; color: #d4d4d4; } 
+.msg-content pre code { background: none; padding: 0; display: block; } 
+</style> 
+</head> 
+<body> 
+
+<div id="historyOverlay" class="overlay-panel"> 
+<div class="overlay-header"> 
+<div> 
+<span class="card-tag">Archive</span> 
+<h2 class="overlay-title">Recent Threads</h2> 
+</div> 
+<button class="close-overlay" id="closeHistory">Return to Chat</button> 
+</div> 
+<div class="history-grid" id="historyGrid"></div> 
+</div> 
+
+<div id="settingsOverlay" class="overlay-panel"> 
+<div class="overlay-header"> 
+<div> 
+<span class="card-tag">Configuration</span> 
+<h2 class="overlay-title">Settings</h2> 
+</div> 
+<button class="close-overlay" id="closeSettings">Close</button> 
+</div> 
+<div class="settings-content"> 
+<div class="settings-section"> 
+<label class="msg-label" style="margin-left: 4px;">New Groq API Key</label> 
+<div class="api-input-group"> 
+<input type="password" placeholder="gsk_..." id="newKeyInput"> 
+<button class="add-key-btn">Add Key</button> 
+</div> 
+</div> 
+
+<div class="settings-section"> 
+<label class="msg-label" style="margin-left: 4px;">Saved API Keys</label> 
+<div class="keys-list"> 
+<div class="key-card active-key"> 
+<div class="key-info"> 
+<span class="key-status">Active</span> 
+<span class="key-name">Personal Project Key</span> 
+<span class="key-id">gsk_aUiX...bwDF</span> 
+</div> 
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> 
+</div> 
+</div> 
+</div> 
+</div> 
+</div> 
+
+<aside class="sidebar"> 
+<div class="sidebar-header"> 
+<div class="logo-mark"> 
+<svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 5L12.2 9L16 10L12.2 11L11 15L9.8 11L6 10L9.8 9Z" fill="#000"/></svg> 
+</div> 
+<span class="logo-text">STUDIO</span> 
+</div> 
+<nav class="nav-items"> 
+<div class="nav-item" id="newThread"> 
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg> 
+<span class="nav-label">New Thread</span> 
+</div> 
+<div class="nav-item" id="historyBtn"> 
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> 
+<span class="nav-label">History</span> 
+</div> 
+<div class="nav-item" style="margin-top: auto;" id="settingsBtn"> 
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> 
+<span class="nav-label">Settings</span> 
+</div> 
+</nav> 
+</aside> 
+
+<div class="app-container"> 
+<main class="chat-space" id="chatSpace"> 
+<div class="msg"> 
+<span class="msg-label">Assistant</span> 
+<div class="msg-content">Hey! I'm powered by Groq's lightning-fast AI. Ask me anything!</div> 
+</div> 
+</main> 
+
+<div class="input-wrapper"> 
+<textarea id="userInput" placeholder="Ask anything..." rows="1"></textarea> 
+<button class="send-trigger" id="sendBtn"> 
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"> 
+<line x1="12" y1="19" x2="12" y2="5"></line> 
+<polyline points="5 12 12 5 19 12"></polyline> 
+</svg> 
+</button> 
+</div> 
+</div> 
+
+<script> 
+const GROQ_API_KEY = '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'; 
+const chatSpace = document.getElementById('chatSpace'); 
+const userInput = document.getElementById('userInput'); 
+const sendBtn = document.getElementById('sendBtn'); 
+const newThreadBtn = document.getElementById('newThread'); 
+const historyBtn = document.getElementById('historyBtn'); 
+const settingsBtn = document.getElementById('settingsBtn'); 
+// Overlays 
+const historyOverlay = document.getElementById('historyOverlay'); 
+const settingsOverlay = document.getElementById('settingsOverlay'); 
+// Close Buttons 
+const closeHistory = document.getElementById('closeHistory'); 
+const closeSettings = document.getElementById('closeSettings'); 
+const historyGrid = document.getElementById('historyGrid'); 
+
+let conversationHistory = []; 
+let isGenerating = false; 
+let currentThreadId = null; 
+
+// --- OVERLAY LOGIC --- 
+
+function closeAllOverlays() { 
+historyOverlay.classList.remove('active'); 
+settingsOverlay.classList.remove('active'); 
+} 
+
+// History Toggle 
+historyBtn.addEventListener('click', () => { 
+closeAllOverlays(); 
+loadHistoryGrid(); 
+historyOverlay.classList.add('active'); 
+}); 
+
+// Settings Toggle 
+settingsBtn.addEventListener('click', () => { 
+closeAllOverlays(); 
+settingsOverlay.classList.add('active'); 
+}); 
+
+// Close Listeners 
+closeHistory.addEventListener('click', () => historyOverlay.classList.remove('active')); 
+closeSettings.addEventListener('click', () => settingsOverlay.classList.remove('active')); 
+
+// --- CORE CHAT LOGIC --- 
+
+// LOAD ALL SAVED THREADS INTO HISTORY GRID 
+function loadHistoryGrid() { 
+const threads = JSON.parse(localStorage.getItem('chatThreads') || '[]'); 
+historyGrid.innerHTML = ''; 
+if (threads.length === 0) { 
+historyGrid.innerHTML = '<p style="color: var(--text-dim); text-align: center; grid-column: 1 / -1;">No saved conversations yet.</p>'; 
+return; 
+} 
+
+threads.sort((a,b) => b.timestamp - a.timestamp).forEach((thread) => { 
+const firstUserMsg = thread.messages.find(m => m.role === 'user')?.content || "Untitled Thread"; 
+const lastMsg = thread.messages[thread.messages.length - 1]?.content || ""; 
+const time = new Date(thread.timestamp).toLocaleString([], { 
+month: 'short', 
+day: 'numeric', 
+hour: '2-digit', 
+minute: '2-digit' 
+}); 
+
+const card = document.createElement('div'); 
+card.className = 'history-card'; 
+card.innerHTML = ` 
+<button class="delete-btn" title="Delete Chat" onclick="deleteThread('${thread.id}', event)">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+</button>
+<span class="card-tag">${time}</span> 
+<div class="card-name">${escapeHtml(firstUserMsg.substring(0, 40))}${firstUserMsg.length > 40 ? '...' : ''}</div> 
+<p class="card-preview">${escapeHtml(lastMsg.substring(0, 100).replace(/<[^>]*>/g, ''))}${lastMsg.length > 100 ? '...' : ''}</p> 
+`; 
+
+// Click to restore thread 
+card.onclick = (e) => { 
+    if (!e.target.closest('.delete-btn')) {
+        restoreThread(thread.id); 
+        historyOverlay.classList.remove('active'); 
+    }
+}; 
+
+historyGrid.appendChild(card); 
+}); 
+} 
+
+// DELETE SPECIFIC THREAD
+function deleteThread(threadId, event) {
+    if(event) event.stopPropagation();
+
+    if(!confirm('Delete this conversation permanently?')) return;
+
+    let threads = JSON.parse(localStorage.getItem('chatThreads') || '[]');
+    threads = threads.filter(t => t.id !== threadId);
+    localStorage.setItem('chatThreads', JSON.stringify(threads));
+
+    loadHistoryGrid();
+
+    if (currentThreadId === threadId) {
+        currentThreadId = null;
+        conversationHistory = [];
+        chatSpace.innerHTML = `
+            <div class="msg">
+                <span class="msg-label">Assistant</span>
+                <div class="msg-content">Thread deleted. Let's start a fresh conversation!</div>
+            </div>
+        `;
+    }
+}
+
+// RESTORE A THREAD FROM HISTORY 
+function restoreThread(threadId) { 
+const threads = JSON.parse(localStorage.getItem('chatThreads') || '[]'); 
+const thread = threads.find(t => t.id === threadId); 
+if (!thread) return; 
+
+currentThreadId = threadId; 
+conversationHistory = thread.messages; 
+// Rebuild chat UI 
+chatSpace.innerHTML = ''; 
+thread.messages.forEach(msg => { 
+const role = msg.role === 'user' ? 'You' : 'Assistant'; 
+appendMessage(role, msg.content, false); 
+}); 
+} 
+
+// AUTO-SAVE CURRENT THREAD 
+function autoSaveThread() { 
+if (conversationHistory.length === 0) return; 
+
+const threads = JSON.parse(localStorage.getItem('chatThreads') || '[]'); 
+if (currentThreadId) { 
+// Update existing thread 
+const threadIndex = threads.findIndex(t => t.id === currentThreadId); 
+if (threadIndex !== -1) { 
+threads[threadIndex].messages = conversationHistory; 
+threads[threadIndex].timestamp = Date.now(); 
+} 
+} else { 
+// Create new thread 
+currentThreadId = 'thread_' + Date.now(); 
+threads.push({ 
+id: currentThreadId, 
+messages: conversationHistory, 
+timestamp: Date.now() 
+}); 
+} 
+
+localStorage.setItem('chatThreads', JSON.stringify(threads)); 
+} 
+
+// New Thread Logic 
+newThreadBtn.addEventListener('click', () => { 
+autoSaveThread(); 
+closeAllOverlays(); 
+currentThreadId = null; 
+conversationHistory = []; 
+chatSpace.innerHTML = ` 
+<div class="msg"> 
+<span class="msg-label">Assistant</span> 
+<div class="msg-content">New conversation started. Ask me anything!</div> 
+</div> 
+`; 
+}); 
+
+// Helper functions 
+function escapeHtml(text) { 
+return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); 
+} 
+
+function syntaxHighlight(code, language) { 
+if (!language) return escapeHtml(code); 
+const lang = language.toLowerCase(); 
+let highlighted = escapeHtml(code); 
+if (['javascript', 'js', 'ts', 'json'].includes(lang)) { 
+highlighted = highlighted 
+.replace(/(\/\/.*$)/gm, '<span style="color: #6a9955;">$1</span>') 
+.replace(/\b(const|let|var|function|return|if|else)\b/g, '<span style="color: #c586c0;">$1</span>') 
+.replace(/(&quot;.*?&quot;|'.*?')/g, '<span style="color: #ce9178;">$1</span>'); 
+} 
+return highlighted; 
+} 
+
+function formatCodeBlocks(text) { 
+const codeBlocks = []; 
+let blockIndex = 0; 
+let processed = text.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, language, code) => { 
+const lang = language || 'code'; 
+const trimmedCode = code.trim(); 
+const highlightedCode = syntaxHighlight(trimmedCode, lang); 
+const placeholder = `___CODEBLOCK_${blockIndex}___`; 
+const encodedCode = btoa(unescape(encodeURIComponent(trimmedCode))); 
+codeBlocks.push(` 
+<div class="code-block-wrapper" data-code="${encodedCode}"> 
+<div class="code-header"><span class="code-language">${lang}</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div> 
+<pre><code>${highlightedCode}</code></pre> 
+</div> 
+`); 
+blockIndex++; 
+return placeholder; 
+}); 
+processed = escapeHtml(processed).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\n/g, '<br>'); 
+codeBlocks.forEach((block, i) => { processed = processed.replace(`___CODEBLOCK_${i}___`, block); }); 
+return processed; 
+} 
+
+function copyCode(button) { 
+const encodedCode = button.closest('.code-block-wrapper').getAttribute('data-code'); 
+const text = decodeURIComponent(escape(atob(encodedCode))); 
+navigator.clipboard.writeText(text).then(() => { 
+button.textContent = 'Copied!'; 
+setTimeout(() => button.textContent = 'Copy', 2000); 
+}); 
+} 
+
+async function callGroqAPI(userMessage) { 
+isGenerating = true; 
+sendBtn.disabled = true; 
+conversationHistory.push({ role: 'user', content: userMessage }); 
+const typingMsg = appendMessage('Assistant', '', true); 
+try { 
+const response = await fetch('https://api.groq.com/openai/v1/chat/completions', { 
+method: 'POST', 
+headers: { 
+'Content-Type': 'application/json', 
+'Authorization': `Bearer ${GROQ_API_KEY}` 
+}, 
+body: JSON.stringify({ 
+model: 'llama-3.3-70b-versatile', 
+messages: conversationHistory, 
+temperature: 0.7, 
+max_tokens: 2048 
+}) 
+}); 
+const data = await response.json(); 
+typingMsg.remove(); 
+if (data.choices && data.choices[0].message.content) { 
+const aiReply = data.choices[0].message.content; 
+conversationHistory.push({ role: 'assistant', content: aiReply }); 
+appendMessage('Assistant', aiReply); 
+autoSaveThread(); 
+} 
+} catch (e) { 
+typingMsg.remove(); 
+appendMessage('System', 'Error connecting to AI. Please try again.'); 
+} 
+finally { 
+isGenerating = false; 
+sendBtn.disabled = false; 
+} 
+} 
+
+function appendMessage(role, text, isTyping = false) { 
+const msgDiv = document.createElement('div'); 
+msgDiv.className = `msg ${role === 'You' ? 'user-msg' : ''}`; 
+if (isTyping) { 
+msgDiv.innerHTML = `<span class="msg-label">${role}</span><div class="msg-content"><span style="color: var(--text-dim);">Thinking...</span></div>`; 
+} else { 
+msgDiv.innerHTML = `<span class="msg-label">${role}</span><div class="msg-content">${formatCodeBlocks(text)}</div>`; 
+} 
+chatSpace.appendChild(msgDiv); 
+chatSpace.scrollTop = chatSpace.scrollHeight; 
+return msgDiv; 
+} 
+
+function handleSend() { 
+const text = userInput.value.trim(); 
+if (!text || isGenerating) return; 
+appendMessage('You', text); 
+userInput.value = ''; 
+userInput.style.height = 'auto'; 
+callGroqAPI(text); 
+} 
+
+// Event Listeners 
+userInput.addEventListener('keydown', (e) => { 
+if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } 
+}); 
+sendBtn.addEventListener('click', handleSend); 
+userInput.addEventListener('input', function() { 
+this.style.height = 'auto'; 
+this.style.height = (this.scrollHeight) + 'px'; 
+const wrapper = document.querySelector('.input-wrapper'); 
+if (this.scrollHeight > 60) { wrapper.style.alignItems = 'flex-end'; } else { wrapper.style.alignItems = 'center'; } 
+}); 
+
+window.addEventListener('load', loadHistoryGrid); 
+</script> 
+</body> 
+</html>
